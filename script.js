@@ -6,6 +6,27 @@ const NEGATIVE = '-';
 const MODULO_FACTOR = 100;
 const buttonContainer = document.querySelector('.button-container');
 const resultDisplay = document.querySelector('.result-display');
+const keyboardToButtonIdMap = {
+  '0': 'zero',
+  '1': 'one',
+  '2': 'two',
+  '3': 'three',
+  '4': 'four',
+  '5': 'five',
+  '6': 'six',
+  '7': 'seven',
+  '8': 'eight',
+  '9': 'nine',
+  '.': 'decimal',
+  '/': 'divide',
+  '*': 'multiply',
+  '+': 'add',
+  '-': 'subtract',
+  'c': 'ac',
+  'C': 'ac',
+  'Escape': 'ac',
+  'Enter': '='
+}
 
 // Global variables
 let prevValue = 0;
@@ -176,25 +197,28 @@ buttonContainer.addEventListener('mouseout', (event) => {
 /* Handles Keyboard events globally, for numbers and operators */
 window.addEventListener('keydown', (event) => {
   const key = event.key;
-  if (NUMERICAL.includes(key)) {
-    handleNumberPressed(key);
+  const value = 'default';
+
+  if (key in keyboardToButtonIdMap) {
+    value = keyboardToButtonIdMap[key];
   }
-  else if (key === '.') {
+  else {
+    value = key;
+  }
+
+  if (NUMERICAL.includes(value)) {
+    handleNumberPressed(value);
+  }
+  else if (value === '.') {
     handleDecimalPressed();
   }
-  else if (OPERATORS.includes(key)) {
-    handleOperatorPressed(key);
+  else if (OPERATORS.includes(value)) {
+    handleOperatorPressed(value);
   }
-  else if (key === 'Enter') {
-    handleOperatorPressed('=');
+  else if (value === '%' || value === 'ac') {
+    handleMiscPressed(value);
   }
-  else if (key === 'C' || key === 'c' || key === 'Esc') {
-    handleMiscPressed('AC');
-  }
-  else if (key === '%') {
-    handleMiscPressed('%');
-  }
-  else if (key === 'Backspace') {
+  else if (value === 'Backspace') {
     handleBackspace();
   }
 });

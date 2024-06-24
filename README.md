@@ -25,5 +25,6 @@ TODO:
   - Let you type out numbers with the keyboard with event listeners for keys 0 - 9
   - Utilize main operators with keyboard, event listeners for /, *, -, +, = and checking shift key 
 
-4) Floating point - (optional):
+4) Floating point and Extra fixes - (optional):
   - Actually make decimal numbers work correctly
+  - Fix the way the = button works, and pressing multiple operations in a row (should only handle one at a time)
