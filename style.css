@@ -39,6 +39,7 @@ body {
   flex-wrap: wrap;
   text-align: center;
   height: 80%;
+  background-color: black
 }
 
 button {
@@ -46,6 +47,7 @@ button {
   width: 25%;
   height: 20%;
   border: 1px solid black;
+  border-radius: 8px;
 }
 
 button.zero {
