@@ -59,7 +59,7 @@ button#zero {
   background-color: burlywood;
 }
 
-.num:hover {
+.num.clicked {
   background-color: rgb(209, 151, 75);
 }
 
@@ -67,7 +67,7 @@ button#zero {
   background-color: antiquewhite;
 }
 
-.misc:hover {
+.misc.clicked {
   background-color: rgb(219, 192, 156);
 }
 
@@ -75,6 +75,6 @@ button#zero {
   background-color: firebrick;
 }
 
-.op:hover {
+.op.clicked {
   background-color: rgb(136, 26, 26);
 }
