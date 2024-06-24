@@ -1,7 +1,7 @@
 // Global constants 
 const MAX_DISPLAY_DIGITS = 10;
 const NUMERICAL = '0123456789';
-const OPERATORS = '/*+-';
+const OPERATORS = '/*+-=';
 const NEGATIVE = '-';
 const MODULO_FACTOR = 100;
 const buttonContainer = document.querySelector('.button-container');
@@ -60,14 +60,9 @@ function handleOperatorPressed(target) {
   if (OPERATORS.includes(operator)) {
     // In the case an operator like * or + get pressed multiple times in a row, both sides of the operator become the previous value
     if (didOperatorJustGetPressed) {
-      if (operator === '=') {
-        activeOperator = '';
-        didOperatorJustGetPressed = false;
-      }
-      else {
-        currValue = prevValue;
-      }
+       currValue = prevValue;
     }
+
     // Go through operators for the existing active operator (not the targetId)
     switch(activeOperator) {
       case '/':
@@ -100,6 +95,7 @@ function handleOperatorPressed(target) {
     }
     else {
       activeOperator = '';
+      didOperatorJustGetPressed = false;
     }
   }
 }
