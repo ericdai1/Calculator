@@ -58,10 +58,22 @@ button.zero {
   background-color: burlywood;
 }
 
+.num:hover {
+  background-color: rgb(209, 151, 75);
+}
+
 .misc {
   background-color: antiquewhite;
 }
 
+.misc:hover {
+  background-color: rgb(219, 192, 156);
+}
+
 .op {
   background-color: firebrick;
+}
+
+.op:hover {
+  background-color: rgb(136, 26, 26);
 }
