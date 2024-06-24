@@ -22,10 +22,11 @@ const keyboardToButtonIdMap = {
   '*': 'multiply',
   '+': 'add',
   '-': 'subtract',
+  '=': 'equal',
+  'Enter': 'equal',
   'c': 'ac',
   'C': 'ac',
   'Escape': 'ac',
-  'Enter': '='
 }
 
 // Global variables
@@ -49,14 +50,20 @@ function displayNewValue() {
 }
 
 /* Handles any numerical addition to the display, such as 0-9 or . */
-function handleNumberPressed(number) {
+function handleNumberPressed(target) {
   if (didOperatorJustGetPressed) {
     didOperatorJustGetPressed = false;
-  }
+  } 
 
-  currValue *= 10;
-  currValue += parseInt(number);
-  displayNewValue();
+  let number = target.textContent;
+  if (NUMERICAL.includes(number)) {
+    currValue *= 10;
+    currValue += parseInt(number);
+    displayNewValue();
+  }
+  else {
+    throw new Error('Invalid id for numerical button');
+  }
 }
 
 function handleDecimalPressed() {
@@ -64,53 +71,61 @@ function handleDecimalPressed() {
 }
 
 /* Handles what happens to the result display when an operator button is pressed, including if there's an active operator */
-function handleOperatorPressed(operator) {
+function handleOperatorPressed(target) {
   // In the case an operator like * or + get pressed multiple times in a row, both sides of the operator become the previous value
   if (didOperatorJustGetPressed) {
       currValue = prevValue;
   }
 
-  // Go through operators for the existing active operator (not the targetId)
-  switch(activeOperator) {
-    case '/':
-      currValue = currValue === 0 ? NaN : prevValue / currValue;
-      break;
-    case '*':
-      currValue = prevValue * currValue;
-      break;
-    case '+':
-      currValue = prevValue + currValue;
-      break;
-    case '-':
-      currValue = prevValue - currValue;
-      break;
-    default:
-      break;
-  }
+  let operator = target.textContent;
+  if (OPERATORS.includes(operator)) {
+    // Go through operators for the existing active operator (not the targetId)
+    switch(activeOperator) {
+      case '/':
+        currValue = currValue === 0 ? NaN : prevValue / currValue;
+        break;
+      case '*':
+        currValue = prevValue * currValue;
+        break;
+      case '+':
+        currValue = prevValue + currValue;
+        break;
+      case '-':
+        currValue = prevValue - currValue;
+        break;
+      default:
+        break;
+    }
 
-  // Display new currValue only if there was an active operator before the current one was pressed
-  if (activeOperator !== '') {
-    displayNewValue();
-  }
+    // Display new currValue only if there was an active operator before the current one was pressed
+    if (activeOperator !== '') {
+      displayNewValue();
+    }
 
-  // Now set new active operator and change the currValue to be 0 so future numerical button presses start from scratch
-  if (operator !== '=') {
-    didOperatorJustGetPressed = true;
-    activeOperator = operator;
-    prevValue = currValue;
-    currValue = 0;
+    // Now set new active operator and change the currValue to be 0 so future numerical button presses start from scratch
+    if (operator !== '=') {
+      didOperatorJustGetPressed = true;
+      activeOperator = operator;
+      prevValue = currValue;
+      currValue = 0;
+    }
+    else {
+      activeOperator = '';
+      didOperatorJustGetPressed = false;
+    }
   }
   else {
-    activeOperator = '';
-    didOperatorJustGetPressed = false;
+    throw new Error('Invalid id for operator button');
   }
 }
 
 /* Handle all three types of miscellaneous buttons, like AC, +/-, and % */
-function handleMiscPressed(miscValue) {
+function handleMiscPressed(target) {
   if (didOperatorJustGetPressed) {
     didOperatorJustGetPressed = false;
   }
+
+  let miscValue = target.textContent;
   
   switch (miscValue) {
     case 'AC':
@@ -147,30 +162,34 @@ function clearAll() {
   isCurrNegative = false;
 }
 
+/* Main function that handles all cases for each type of button, entering from a click or a keyboard key press */
+function performButtonOperationForTarget(target) {
+  const targetClass = target.className;
+
+  if (targetClass) {
+    switch (targetClass) {
+      case 'num':
+        target.id === '.' ? handleDecimal() : handleNumberPressed(target);
+        break;
+      case 'op':
+        handleOperatorPressed(target);
+        break;
+      case 'misc':
+        handleMiscPressed(target);
+        break;
+      default:
+        break;
+    }
+  }
+}
+
 // Event handlers
 /* The following event listener handles any clicks that occur, using a switch statement to determine which helper function to
 call depending on if the clicked button is a number, operator, or others */
 buttonContainer.addEventListener('click', (event) => {
   const target = event.target;
   if (event.target) {
-    const targetClass = target.className;
-    const buttonContent = target.textContent;
-
-    if (targetClass) {
-      switch (targetClass) {
-        case 'num':
-          target.id ? handleDecimal() : handleNumberPressed(buttonContent);
-          break;
-        case 'op':
-          handleOperatorPressed(buttonContent);
-          break;
-        case 'misc':
-          handleMiscPressed(buttonContent);
-          break;
-        default:
-          break;
-      }
-    }
+    performButtonOperationForTarget(target);
   }
 });
 
@@ -197,28 +216,18 @@ buttonContainer.addEventListener('mouseout', (event) => {
 /* Handles Keyboard events globally, for numbers and operators */
 window.addEventListener('keydown', (event) => {
   const key = event.key;
-  const value = 'default';
 
   if (key in keyboardToButtonIdMap) {
-    value = keyboardToButtonIdMap[key];
-  }
-  else {
-    value = key;
-  }
+    let buttonId = keyboardToButtonIdMap[key];
+    const targetButton = document.querySelector(`#${buttonId}`);
+    
+    if (key === 'Enter') {
+      event.preventDefault();
+    }
 
-  if (NUMERICAL.includes(value)) {
-    handleNumberPressed(value);
-  }
-  else if (value === '.') {
-    handleDecimalPressed();
-  }
-  else if (OPERATORS.includes(value)) {
-    handleOperatorPressed(value);
-  }
-  else if (value === '%' || value === 'ac') {
-    handleMiscPressed(value);
-  }
-  else if (value === 'Backspace') {
-    handleBackspace();
+    if (targetButton) {
+      // targetButton.classList.add('clicked');
+      performButtonOperationForTarget(targetButton);
+    }
   }
 });
