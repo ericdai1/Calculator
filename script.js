@@ -28,19 +28,14 @@ function displayNewValue() {
 }
 
 /* Handles any numerical addition to the display, such as 0-9 or . */
-function handleNumberPressed(target) {
+function handleNumberPressed(number) {
   if (didOperatorJustGetPressed) {
     didOperatorJustGetPressed = false;
   }
 
-  let textContent = target.textContent;
-
-  if (textContent === '.') {
-    handleDecimal();
-  }
-  else if (NUMERICAL.includes(textContent)) {
+  if (NUMERICAL.includes(number)) {
     currValue *= 10;
-    currValue += parseInt(textContent);
+    currValue += parseInt(number);
   }
   else {
     throw new Error("Numerical button pressed but text content is not numerical")
@@ -49,7 +44,7 @@ function handleNumberPressed(target) {
   displayNewValue();
 }
 
-function handleDecimal() {
+function handleDecimalPressed() {
   /* TODO */
 }
 
@@ -145,7 +140,7 @@ buttonContainer.addEventListener('click', (event) => {
     if (targetClass) {
       switch (targetClass) {
         case 'num':
-          handleNumberPressed(target);
+          target.id ? handleDecimal() : handleNumberPressed(target.textContent);
           break;
         case 'op':
           handleOperatorPressed(target);
