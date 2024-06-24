@@ -51,7 +51,7 @@ button {
   border-radius: 8px;
 }
 
-button.zero {
+button#zero {
   width: 50%;
 }
 
