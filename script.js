@@ -1,5 +1,5 @@
 // Global constants 
-const MAX_DISPLAY_DIGITS = 8;
+const MAX_DISPLAY_DIGITS = 10;
 const NUMERICAL = '0123456789';
 const OPERATORS = '/*+-';
 const NEGATIVE = '-';
@@ -17,6 +17,7 @@ let activeOperator = '';
 let isPrevNegative = false;
 let isCurrNegative = false;
 let decimal = false; 
+let didOperatorJustGetPressed = false;
 
 // Helper functions
 /* Handles string manipulation to display up to an 8 digit value as the result */
@@ -28,6 +29,10 @@ function displayNewValue() {
 
 /* Handles any numerical addition to the display, such as 0-9 or . */
 function handleNumberPressed(target) {
+  if (didOperatorJustGetPressed) {
+    didOperatorJustGetPressed = false;
+  }
+
   let textContent = target.textContent;
 
   if (textContent === '.') {
@@ -50,9 +55,19 @@ function handleDecimal() {
 
 /* Handles what happens to the result display when an operator button is pressed, including if there's an active operator */
 function handleOperatorPressed(target) {
-  let targetId = target.id;
+  let operator = target.textContent;
 
-  if (OPERATORS.includes(targetId)) {
+  if (OPERATORS.includes(operator)) {
+    // In the case an operator like * or + get pressed multiple times in a row, both sides of the operator become the previous value
+    if (didOperatorJustGetPressed) {
+      if (operator === '=') {
+        activeOperator = '';
+        didOperatorJustGetPressed = false;
+      }
+      else {
+        currValue = prevValue;
+      }
+    }
     // Go through operators for the existing active operator (not the targetId)
     switch(activeOperator) {
       case '/':
@@ -77,8 +92,9 @@ function handleOperatorPressed(target) {
     }
 
     // Now set new active operator and change the currValue to be 0 so future numerical button presses start from scratch
-    if (targetId !== '=') {
-      activeOperator = targetId;
+    if (operator !== '=') {
+      didOperatorJustGetPressed = true;
+      activeOperator = operator;
       prevValue = currValue;
       currValue = 0;
     }
@@ -86,13 +102,14 @@ function handleOperatorPressed(target) {
       activeOperator = '';
     }
   }
-  else {
-    throw new Error('Invalid id for operator button');
-  }
 }
 
 /* Handle all three types of miscellaneous buttons, like AC, +/-, and % */
 function handleMiscPressed(target) {
+  if (didOperatorJustGetPressed) {
+    didOperatorJustGetPressed = false;
+  }
+
   let targetId = target.id;
   
   switch (targetId) {
@@ -141,7 +158,7 @@ buttonContainer.addEventListener('click', (event) => {
           handleMiscPressed(target);
           break;
         default:
-          throw new Error('Invalid target class for a button click event.');
+          break;
       }
     }
   }
