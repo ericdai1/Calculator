@@ -1,9 +1,13 @@
 # Calculator
-FINISHED: None
+Keyboard Controls:
+- Backspace => Removes last digit on the display
+- Esc => AC - Clears display
+- c or C => AC - Clears display
+- Everything else typed will match with what is on each button if applicable
 
-TODO:
+FINISHED: 
 1) Basic structure using DOM manipulation or HTML, + CSS:
-  - Main container, with the first elemenet being a large text area
+  - Main container, with the first element being a large text area
   - Buttons and their unique colors
   - Correct layout and text content
 
@@ -16,6 +20,7 @@ TODO:
   - . to utilize decimals
   - Handle overflows
 
+TODO:
 3) Keyboard - Basics:
   - Let you type out numbers with the keyboard with event listeners for keys 0 - 9
   - Utilize main operators with keyboard, event listeners for /, *, -, +, = and checking shift key 
