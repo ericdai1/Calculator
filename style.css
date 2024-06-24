@@ -4,4 +4,47 @@
 
 body {
   display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin: 10%;
+  padding: 0;
+  width: 400px;
+  height: 600px;
+  border: 10px solid rgb(50, 50, 50)
+}
+
+.result-display {
+  border: 4px solid rgb(50, 50, 50);
+  text-align: right;
+  padding: 8px;
+  font-size: 80px;
+  width: 100%;
+  height: 20%;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  text-align: center;
+  height: 80%;
+}
+
+button {
+  font-size: 28px;
+  width: 25%;
+  height: 20%;
+  border: 1px solid black;
+}
+
+button.zero {
+  width: 50%;
 }
