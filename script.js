@@ -6,6 +6,7 @@ const NEGATIVE = '-';
 const MODULO_FACTOR = 100;
 const buttonContainer = document.querySelector('.button-container');
 const resultDisplay = document.querySelector('.result-display');
+
 const keyboardToButtonIdMap = {
   '0': 'zero',
   '1': 'one',
@@ -27,7 +28,11 @@ const keyboardToButtonIdMap = {
   'c': 'ac',
   'C': 'ac',
   'Escape': 'ac',
+  '%': 'modulo'
 }
+
+const shiftButtonIds = ['add', 'multiply', 'modulo'];
+const pressedButtons = new Set();
 
 // Global variables
 let prevValue = 0;
@@ -164,7 +169,7 @@ function clearAll() {
 
 /* Main function that handles all cases for each type of button, entering from a click or a keyboard key press */
 function performButtonOperationForTarget(target) {
-  const targetClass = target.className;
+  const targetClass = target.classList[0];
 
   if (targetClass) {
     switch (targetClass) {
@@ -220,14 +225,50 @@ window.addEventListener('keydown', (event) => {
   if (key in keyboardToButtonIdMap) {
     let buttonId = keyboardToButtonIdMap[key];
     const targetButton = document.querySelector(`#${buttonId}`);
-    
+
+    // Prevent Enter key from its default action of repeating any 'chosen' or 'highlighted' button, and just act as a = button
     if (key === 'Enter') {
       event.preventDefault();
     }
 
     if (targetButton) {
-      // targetButton.classList.add('clicked');
+      // Remove highlight from all other pressed keys
+      pressedButtons.forEach((pressedButton) => {
+        pressedButton.classList.remove('pressed');
+      })
+
+      pressedButtons.clear();
+      
+      targetButton.classList.add('pressed'); 
+      pressedButtons.add(targetButton);
       performButtonOperationForTarget(targetButton);
     }
+  }
+  else if (key === 'Backspace') {
+    handleBackspace();
+  }
+});
+
+/* Only used to handle the highlighting of the button that represents the pressed down key */
+window.addEventListener('keyup', (event) => {
+  const key = event.key;
+
+  if (key in keyboardToButtonIdMap) {
+    let buttonId = keyboardToButtonIdMap[key];
+    const targetButton = document.querySelector(`#${buttonId}`);
+
+    if (targetButton) {
+      targetButton.classList.remove('pressed');
+    }
+  }
+  else if (key === 'Shift') {
+    shiftButtonIds.forEach((buttonId) => {
+      const targetButton = document.querySelector(`#${buttonId}`);
+
+      if (targetButton.classList.contains('pressed')) {
+        targetButton.classList.remove('pressed')
+        pressedButtons.clear();
+      }
+    })
   }
 });

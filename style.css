@@ -67,7 +67,7 @@ button#zero {
   background-color: burlywood;
 }
 
-.num.clicked {
+.num.clicked, .num.pressed {
   background-color: rgb(209, 151, 75);
 }
 
@@ -75,7 +75,7 @@ button#zero {
   background-color: antiquewhite;
 }
 
-.misc.clicked {
+.misc.clicked, .misc.pressed{
   background-color: rgb(219, 192, 156);
 }
 
@@ -83,6 +83,6 @@ button#zero {
   background-color: firebrick;
 }
 
-.op.clicked {
+.op.clicked, .op.pressed{
   background-color: rgb(136, 26, 26);
 }
