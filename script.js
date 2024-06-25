@@ -40,17 +40,20 @@ let currValue = 0;
 let activeOperator = '';
 
 // Boolean flags
-/* TODO later */
 let isPrevNegative = false;
 let isCurrNegative = false;
-let decimal = false; 
 let didOperatorJustGetPressed = false;
+let hasTrailingDecimal = false; 
+let digitsPastDecimal = 0;
 
 // Helper functions
 /* Handles string manipulation to display up to an 8 digit value as the result */
 function displayNewValue() {
-  let valueWithSign = (isCurrNegative && currValue !== 0) ? NEGATIVE + currValue.toString() : currValue.toString();
-  let displayedValue = valueWithSign.slice(0, MAX_DISPLAY_DIGITS);
+  let floatValue = digitsPastDecimal > 1 ? currValue.toFixed(digitsPastDecimal - 1) : currValue;
+  let valueWithSign = (isCurrNegative && floatValue !== 0) ? NEGATIVE + floatValue.toString() : floatValue.toString();
+  let valueWithDecimal = hasTrailingDecimal ? valueWithSign + '.' : valueWithSign;
+  let displayedValue = valueWithDecimal.slice(0, MAX_DISPLAY_DIGITS);
+  
   resultDisplay.textContent = displayedValue;
 }
 
@@ -60,19 +63,39 @@ function handleNumberPressed(target) {
     didOperatorJustGetPressed = false;
   } 
 
+  if (hasTrailingDecimal) {
+    hasTrailingDecimal = false;
+  }
+
   let number = target.textContent;
   if (NUMERICAL.includes(number)) {
-    currValue *= 10;
-    currValue += parseInt(number);
-    displayNewValue();
+    if (digitsPastDecimal > 0) {
+      // Floating point logic
+      hasTrailingDecimal = false;
+      let decimalValue = parseInt(number) / Math.pow(10, digitsPastDecimal);
+      currValue += decimalValue;
+      digitsPastDecimal += 1;
+    }
+    else {
+      currValue *= 10;
+      currValue += parseInt(number);
+    }
+
+    displayNewValue();  
   }
   else {
     throw new Error('Invalid id for numerical button');
   }
 }
 
+/* Add a decimal */
 function handleDecimalPressed() {
-  /* TODO */
+  if (digitsPastDecimal === 0) {
+    hasTrailingDecimal = true;
+    digitsPastDecimal += 1;
+
+    displayNewValue();
+  }
 }
 
 /* Handles what happens to the result display when an operator button is pressed, including if there's an active operator */
@@ -112,6 +135,8 @@ function handleOperatorPressed(target) {
       didOperatorJustGetPressed = true;
       activeOperator = operator;
       prevValue = currValue;
+      hasTrailingDecimal = false;
+      digitsPastDecimal = 0;
       currValue = 0;
     }
     else {
@@ -149,13 +174,30 @@ function handleMiscPressed(target) {
   displayNewValue();
 }
 
+/* Removes the last digit of the result, including a decimal if applicable */
 function handleBackspace() {
-  if (currValue) {
+  if (hasTrailingDecimal) {
+    hasTrailingDecimal = false;
+    digitsPastDecimal = 0;
+  }
+  else if (currValue) {
+    if (digitsPastDecimal > 1) {
+      // Since we remove from the end, in the case we remove back to where there's just a decimal point and nothing after, we set the trailing flag
+      digitsPastDecimal -= 1;
+      if (digitsPastDecimal === 1) {
+        hasTrailingDecimal = true;
+      }
+    }
+
     let currValueAsStr = currValue.toString();
     currValue = currValueAsStr.length === 1 ? 0 : parseFloat(currValueAsStr.slice(0, currValueAsStr.length - 1));
 
-    displayNewValue();  
+    if (digitsPastDecimal > 1) {
+      currValue = parseFloat(currValue.toFixed(digitsPastDecimal - 1));
+    }
   }
+
+  displayNewValue();  
 }
 
 /* Resets all global variables to default values */
@@ -165,6 +207,9 @@ function clearAll() {
   activeOperator = '';
   isPrevNegative = false;
   isCurrNegative = false;
+  didOperatorJustGetPressed = false;
+  hasTrailingDecimal = false;
+  digitsPastDecimal = 0;
 }
 
 /* Main function that handles all cases for each type of button, entering from a click or a keyboard key press */
@@ -174,7 +219,7 @@ function performButtonOperationForTarget(target) {
   if (targetClass) {
     switch (targetClass) {
       case 'num':
-        target.id === '.' ? handleDecimal() : handleNumberPressed(target);
+        target.id === 'decimal' ? handleDecimalPressed() : handleNumberPressed(target);
         break;
       case 'op':
         handleOperatorPressed(target);
