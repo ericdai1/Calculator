@@ -71,7 +71,6 @@ function handleNumberPressed(target) {
   if (NUMERICAL.includes(number)) {
     if (digitsPastDecimal > 0) {
       // Floating point logic
-      hasTrailingDecimal = false;
       let decimalValue = parseInt(number) / Math.pow(10, digitsPastDecimal);
       currValue += decimalValue;
       digitsPastDecimal += 1;
@@ -124,6 +123,13 @@ function handleOperatorPressed(target) {
       default:
         break;
     }
+    
+    // Case where an operation is done and the new value is able to be an integer despite float operations (ex: 129.40 - 1.40 = 128)
+    if (Number.isInteger(currValue)) {
+      currValue = parseInt(currValue);
+      hasTrailingDecimal = false;
+      digitsPastDecimal = 0;
+    }
 
     // Display new currValue only if there was an active operator before the current one was pressed
     if (activeOperator !== '') {
@@ -162,7 +168,7 @@ function handleMiscPressed(target) {
       clearAll();
       break;
     case '+/-':
-      isCurrNegative = isCurrNegative ? false : true;
+      currValue *= -1;
       break;
     case '%':
       currValue /= MODULO_FACTOR;
