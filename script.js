@@ -59,13 +59,12 @@ function displayNewValue() {
 function handleLastOperatorPressed() {
   if (wasEqualLastPressed && didOperatorJustGetPressed) {
     currValue = 0;
-  } 
-
-  if (didOperatorJustGetPressed) {
-    didOperatorJustGetPressed = false;
+    prevValue = 0;
     hasTrailingDecimal = false;
     digitsPastDecimal = 0;
-  }
+  } 
+
+  didOperatorJustGetPressed = false;
 }
 
 /* Handles any numerical addition to the display, such as 0-9 or . */
@@ -117,9 +116,8 @@ function handleOperatorPressed(target) {
   if (OPERATORS.includes(operator)) {
     // Handle the case where multiple operators are pressed in a row, such as * then + (don't do anything but change the active operator)
     // However, when there is an =, utilize the previous value and operator in store
-    if (didOperatorJustGetPressed && operator !== '=') {
+    if (didOperatorJustGetPressed && operator != '=' && activeOperator != '') {
       activeOperator = operator;
-      prevValue = currValue;
     }
     else {
       // Go through operators for the existing active operator (not the targetId)
@@ -154,21 +152,18 @@ function handleOperatorPressed(target) {
       }
   
       // Now set new active operator and change the currValue to be 0 so future numerical button presses start from scratch
+      prevValue = currValue;
       if (operator !== '=') {
         activeOperator = operator;
   
-        if (!didOperatorJustGetPressed) {
-          prevValue = currValue;
-          hasTrailingDecimal = false;
-          digitsPastDecimal = 0;
-          currValue = 0;
-          wasEqualLastPressed = false;
-        }
+        hasTrailingDecimal = false;
+        digitsPastDecimal = 0;
+        currValue = 0;
+        wasEqualLastPressed = false;
       }
-      else if (!wasEqualLastPressed) {
+      else {
         wasEqualLastPressed = true;
         activeOperator = '';
-        prevValue = tempCurr;
       }
 
       didOperatorJustGetPressed = true;
