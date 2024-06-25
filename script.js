@@ -40,9 +40,8 @@ let currValue = 0;
 let activeOperator = '';
 
 // Boolean flags
-let isPrevNegative = false;
-let isCurrNegative = false;
 let didOperatorJustGetPressed = false;
+let wasEqualLastPressed = false;
 let hasTrailingDecimal = false; 
 let digitsPastDecimal = 0;
 
@@ -50,18 +49,29 @@ let digitsPastDecimal = 0;
 /* Handles string manipulation to display up to an 8 digit value as the result */
 function displayNewValue() {
   let floatValue = digitsPastDecimal > 1 ? currValue.toFixed(digitsPastDecimal - 1) : currValue;
-  let valueWithSign = (isCurrNegative && floatValue !== 0) ? NEGATIVE + floatValue.toString() : floatValue.toString();
-  let valueWithDecimal = hasTrailingDecimal ? valueWithSign + '.' : valueWithSign;
-  let displayedValue = valueWithDecimal.slice(0, MAX_DISPLAY_DIGITS);
+  let valueWithDecimal = hasTrailingDecimal ? floatValue + '.' : floatValue;
+  let displayedValue = valueWithDecimal.toString().slice(0, MAX_DISPLAY_DIGITS);
   
   resultDisplay.textContent = displayedValue;
 }
 
-/* Handles any numerical addition to the display, such as 0-9 or . */
-function handleNumberPressed(target) {
+/* Handles cases where a number or decimal are pressed after an operator or an equals */
+function handleLastOperatorPressed() {
+  if (wasEqualLastPressed && didOperatorJustGetPressed) {
+    currValue = 0;
+  } 
+
   if (didOperatorJustGetPressed) {
     didOperatorJustGetPressed = false;
-  } 
+    hasTrailingDecimal = false;
+    digitsPastDecimal = 0;
+  }
+}
+
+/* Handles any numerical addition to the display, such as 0-9 or . */
+function handleNumberPressed(target) {
+  // 22 + 11 = 33 => 11 (+ 11) = 22 
+  handleLastOperatorPressed();
 
   if (hasTrailingDecimal) {
     hasTrailingDecimal = false;
@@ -89,6 +99,8 @@ function handleNumberPressed(target) {
 
 /* Add a decimal */
 function handleDecimalPressed() {
+  handleLastOperatorPressed();
+
   if (digitsPastDecimal === 0) {
     hasTrailingDecimal = true;
     digitsPastDecimal += 1;
@@ -99,55 +111,67 @@ function handleDecimalPressed() {
 
 /* Handles what happens to the result display when an operator button is pressed, including if there's an active operator */
 function handleOperatorPressed(target) {
-  // In the case an operator like * or + get pressed multiple times in a row, both sides of the operator become the previous value
-  if (didOperatorJustGetPressed) {
-      currValue = prevValue;
-  }
-
+  
   let operator = target.textContent;
+
   if (OPERATORS.includes(operator)) {
-    // Go through operators for the existing active operator (not the targetId)
-    switch(activeOperator) {
-      case '/':
-        currValue = currValue === 0 ? NaN : prevValue / currValue;
-        break;
-      case '*':
-        currValue = prevValue * currValue;
-        break;
-      case '+':
-        currValue = prevValue + currValue;
-        break;
-      case '-':
-        currValue = prevValue - currValue;
-        break;
-      default:
-        break;
-    }
-    
-    // Case where an operation is done and the new value is able to be an integer despite float operations (ex: 129.40 - 1.40 = 128)
-    if (Number.isInteger(currValue)) {
-      currValue = parseInt(currValue);
-      hasTrailingDecimal = false;
-      digitsPastDecimal = 0;
-    }
-
-    // Display new currValue only if there was an active operator before the current one was pressed
-    if (activeOperator !== '') {
-      displayNewValue();
-    }
-
-    // Now set new active operator and change the currValue to be 0 so future numerical button presses start from scratch
-    if (operator !== '=') {
-      didOperatorJustGetPressed = true;
+    // Handle the case where multiple operators are pressed in a row, such as * then + (don't do anything but change the active operator)
+    // However, when there is an =, utilize the previous value and operator in store
+    if (didOperatorJustGetPressed && operator !== '=') {
       activeOperator = operator;
       prevValue = currValue;
-      hasTrailingDecimal = false;
-      digitsPastDecimal = 0;
-      currValue = 0;
     }
     else {
-      activeOperator = '';
-      didOperatorJustGetPressed = false;
+      // Go through operators for the existing active operator (not the targetId)
+      let tempCurr = currValue;
+      switch(activeOperator) {
+        case '/':
+          currValue = currValue === 0 ? NaN : prevValue / currValue;
+          break;
+        case '*':
+          currValue = prevValue * currValue;
+          break;
+        case '+':
+          currValue = prevValue + currValue;
+          break;
+        case '-':
+          currValue = prevValue - currValue;
+          break;
+        default:
+          break;
+      }
+      
+      // Case where an operation is done and the new value is able to be an integer despite float operations (ex: 129.40 - 1.40 = 128)
+      if (Number.isInteger(currValue)) {
+        currValue = parseInt(currValue);
+        hasTrailingDecimal = false;
+        digitsPastDecimal = 0;
+      }
+  
+      // Display new currValue only if there was an active operator before the current one was pressed
+      if (activeOperator !== '') {
+        displayNewValue();
+      }
+  
+      // Now set new active operator and change the currValue to be 0 so future numerical button presses start from scratch
+      if (operator !== '=') {
+        activeOperator = operator;
+  
+        if (!didOperatorJustGetPressed) {
+          prevValue = currValue;
+          hasTrailingDecimal = false;
+          digitsPastDecimal = 0;
+          currValue = 0;
+          wasEqualLastPressed = false;
+        }
+      }
+      else if (!wasEqualLastPressed) {
+        wasEqualLastPressed = true;
+        activeOperator = '';
+        prevValue = tempCurr;
+      }
+
+      didOperatorJustGetPressed = true;
     }
   }
   else {
@@ -157,7 +181,8 @@ function handleOperatorPressed(target) {
 
 /* Handle all three types of miscellaneous buttons, like AC, +/-, and % */
 function handleMiscPressed(target) {
-  if (didOperatorJustGetPressed) {
+  if (didOperatorJustGetPressed || wasEqualLastPressed) {
+    wasEqualLastPressed = false;
     didOperatorJustGetPressed = false;
   }
 
@@ -211,9 +236,8 @@ function clearAll() {
   prevValue = 0;
   currValue = 0;
   activeOperator = '';
-  isPrevNegative = false;
-  isCurrNegative = false;
   didOperatorJustGetPressed = false;
+  wasEqualLastPressed = false;
   hasTrailingDecimal = false;
   digitsPastDecimal = 0;
 }
